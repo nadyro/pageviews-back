@@ -5,7 +5,9 @@
   "scripts": {
     "start": "mongod --dbpath data/db --fork --logpath ./mongod.log && redis-server --daemonize yes && ts-node-dev server.ts --respawn --transpileOnly",
     "dev": "ts-node-dev --respawn --watch *.ts",
-    "test": "mocha"
+    "test": "mocha",
+    "config-real-os": "mkdir -p data/db && mongod --dbpath data/db --fork --logpath ./mongod.log && redis-server --daemonize yes",
+    "fire": "ts-node server.ts"
   },
   "dependencies": {
     "@types/bcrypt": "^5.0.0",
