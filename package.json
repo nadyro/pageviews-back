@@ -3,8 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "mongod --dbpath data/db --fork --logpath ./mongod.log && redis-server --daemonize yes && ts-node-dev server.ts --respawn --transpileOnly",
-    "dev": "ts-node-dev --respawn --watch *.ts",
+    "start": "ts-node-dev server.ts --respawn --transpileOnly",
     "test": "mocha",
     "config-real-os": "mkdir -p data/db && mongod --dbpath data/db --fork --logpath ./mongod.log && redis-server --daemonize yes",
     "fire": "ts-node server.ts"

@@ -210,7 +210,6 @@ export class PageviewsController {
             })
         } else {
             // Condition that checks if any file among those requested already exists in server.
-            console.log(dateRange.dateArray);
             for (const da of dateRange.dateArray) {
                 const fileName = pageViewsPrefix + da.year + da.month + da.day + '-' + da.hour + '0000';
                 // If the operation for the same date and time has already been done, sends it immediately.

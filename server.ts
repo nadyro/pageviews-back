@@ -255,120 +255,124 @@ export const compute = (pageviewsFilename: string, user: User, param: any): any 
              * For example, if I need to delete a blacklisted page from the listed page array, I just need
              * to know the element that indexes the former in the latter, then use the delete operator by target it.
              * */
-            const newPromise = new Promise((resolve) => {
+            const newPromise = new Promise((resolve, reject) => {
                 // Reading sub-domain file of listed pages
                 fs.readFile(filePathListed, (err1, data) => {
-                    // Array of pages in the listed sub-domain file
-                    let lines = data.toString().split(',');
-                    /**
-                     * Object that will contain each listed page indexed by their names
-                     * Ex. for page 'en Main_Page 1 0', container will be equal to : {Main_Page: en Main_Page 1 0}
-                     * */
-                    let container: any = {};
+                    if (data) {
+                        // Array of pages in the listed sub-domain file
+                        let lines = data.toString().split(',');
+                        /**
+                         * Object that will contain each listed page indexed by their names
+                         * Ex. for page 'en Main_Page 1 0', container will be equal to : {Main_Page: en Main_Page 1 0}
+                         * */
+                        let container: any = {};
 
-                    // Object that contains the top TOP_MAX viewed page for the current sub-domain file.
-                    const container_0: Page[] = [];
+                        // Object that contains the top TOP_MAX viewed page for the current sub-domain file.
+                        const container_0: Page[] = [];
 
-                    /** Object that contains the top TOP_MAX viewed page for the current sub-domain file and that will
-                     * be written in the final results file needed for this exercice.
-                     * */
-                    const container_1 = [];
+                        /** Object that contains the top TOP_MAX viewed page for the current sub-domain file and that will
+                         * be written in the final results file needed for this exercice.
+                         * */
+                        const container_1 = [];
 
-                    /** Temporary object that serves for comparison of the most viewed pages in the current
-                     * sub-domain file */
-                    let containerTmp: Page[] = [];
+                        /** Temporary object that serves for comparison of the most viewed pages in the current
+                         * sub-domain file */
+                        let containerTmp: Page[] = [];
 
 
-                    lines.forEach(line => {
-                        // parseLine converts a line into a Page object
-                        const parsedLine: Page = parseLine(line);
-                        container[parsedLine.name] = parsedLine;
-                    });
-
-                    /**
-                     * Here lies the advantage of the data structure I used.
-                     * For this exercise, the blacklisted file will always be smaller than the listed file.
-                     * Since all the blacklisted pages have been sorted by subdomains, the files containing the
-                     * blacklisted pages is even smaller, which greatly increases the blacklisted page deletion from
-                     * the listed pages.
-                     * */
-                    // Removing blacklisted pages existing in listed sub-domain pages
-                    if (blacklistedLines) {
-                        const blacklistedContainer: any = {};
-                        blacklistedLines.forEach((bLines: any) => {
-                            const parsedBline: Page = parseLine(bLines);
-                            blacklistedContainer[parsedBline.name] = parsedBline;
+                        lines.forEach(line => {
+                            // parseLine converts a line into a Page object
+                            const parsedLine: Page = parseLine(line);
+                            container[parsedLine.name] = parsedLine;
                         });
-                        for (const [key] of Object.entries(blacklistedContainer)) {
-                            /**
-                             * The delete operator just targets an indexed element in the object container
-                             * previously declared and deletes it if it exists and is blacklisted */
-                            if (container[key]) {
-                                delete container[key];
+
+                        /**
+                         * Here lies the advantage of the data structure I used.
+                         * For this exercise, the blacklisted file will always be smaller than the listed file.
+                         * Since all the blacklisted pages have been sorted by subdomains, the files containing the
+                         * blacklisted pages is even smaller, which greatly increases the blacklisted page deletion from
+                         * the listed pages.
+                         * */
+                        // Removing blacklisted pages existing in listed sub-domain pages
+                        if (blacklistedLines) {
+                            const blacklistedContainer: any = {};
+                            blacklistedLines.forEach((bLines: any) => {
+                                const parsedBline: Page = parseLine(bLines);
+                                blacklistedContainer[parsedBline.name] = parsedBline;
+                            });
+                            for (const [key] of Object.entries(blacklistedContainer)) {
+                                /**
+                                 * The delete operator just targets an indexed element in the object container
+                                 * previously declared and deletes it if it exists and is blacklisted */
+                                if (container[key]) {
+                                    delete container[key];
+                                }
                             }
                         }
-                    }
 
 
-                    /** Here, there are only listed pages, all blacklisted pages for the current sub-domain file
-                     * have been deleted. */
+                        /** Here, there are only listed pages, all blacklisted pages for the current sub-domain file
+                         * have been deleted. */
 
-                        // Algorithm that sorts top 25 pages
-                    let l = TOP_MAX;
-                    let largestView = 0;
-                    while (l > 0) {
-                        /** Browse the current subdomain file (without blacklisted pages) and stores the page with
-                         * with the greatest view in a temporary array */
-                        for (const [key, value] of Object.entries(container)) {
-                            const p: any = value;
-                            // @ts-ignore: property 'views' does not exist on type 'unknown'
-                            if (parseInt(p.views) > largestView) {
+                            // Algorithm that sorts top 25 pages
+                        let l = TOP_MAX;
+                        let largestView = 0;
+                        while (l > 0) {
+                            /** Browse the current subdomain file (without blacklisted pages) and stores the page with
+                             * with the greatest view in a temporary array */
+                            for (const [key, value] of Object.entries(container)) {
+                                const p: any = value;
                                 // @ts-ignore: property 'views' does not exist on type 'unknown'
-                                largestView = parseInt(p.views);
-                                p['index'] = key;
-                                // @ts-ignore: Argument of type 'unknown' is not assignable to parameter of type 'Page'
-                                containerTmp.push(p);
+                                if (parseInt(p.views) > largestView) {
+                                    // @ts-ignore: property 'views' does not exist on type 'unknown'
+                                    largestView = parseInt(p.views);
+                                    p['index'] = key;
+                                    // @ts-ignore: Argument of type 'unknown' is not assignable to parameter of type 'Page'
+                                    containerTmp.push(p);
+                                }
                             }
-                        }
-                        /** Once the browsing is done, I have a temporary array (containerTmp) containing all of
-                         * the greatest views and a variable (largestView) containing the largest view of the file. */
-                        let p = 0;
-                        /** Here, I find the page with largest view in the temporary array of pages with largest views.
-                         * Then we store it in the object containing the TOP_MAX views.
-                         * Then we delete that largest view from the original container.
-                         * Which, when the loop will start again, will be a container without the largest view
-                         * previously fetched.*/
-                        while (p < containerTmp.length) {
-                            if (largestView === parseInt(containerTmp[p].views)) {
-                                const tmp = {...container[containerTmp[p]['index']]};
-                                container_0.push(tmp);
-                                container_1.push(tmp['country'] + ' ' + tmp['name'] + ' ' + tmp['views'] + ' ' + tmp['responseSize']);
-                                delete container[containerTmp[p]['index']];
+                            /** Once the browsing is done, I have a temporary array (containerTmp) containing all of
+                             * the greatest views and a variable (largestView) containing the largest view of the file. */
+                            let p = 0;
+                            /** Here, I find the page with largest view in the temporary array of pages with largest views.
+                             * Then we store it in the object containing the TOP_MAX views.
+                             * Then we delete that largest view from the original container.
+                             * Which, when the loop will start again, will be a container without the largest view
+                             * previously fetched.*/
+                            while (p < containerTmp.length) {
+                                if (largestView === parseInt(containerTmp[p].views)) {
+                                    const tmp = {...container[containerTmp[p]['index']]};
+                                    container_0.push(tmp);
+                                    container_1.push(tmp['country'] + ' ' + tmp['name'] + ' ' + tmp['views'] + ' ' + tmp['responseSize']);
+                                    delete container[containerTmp[p]['index']];
+                                }
+                                p++;
                             }
-                            p++;
+                            containerTmp = [];
+                            largestView = 0;
+                            l--;
                         }
-                        containerTmp = [];
-                        largestView = 0;
-                        l--;
-                    }
 
-                    /**
-                     * Once the top 25 viewed pages have been fetched, I write them both in a JSON formatted file and
-                     * a text file.
-                     * The JSON formatted file will serve immediately for the user while the text file will be written
-                     * once the whole process of all the sub-domains is done.*/
-                    if (country.length > 0) {
-                        let fileName = FILES_DIFF + RESULTS + pageviewsFilename + '/' + country + '.json';
-                        container_1.forEach(c => {
-                            arrayContainer_0 += c + '\n';
-                        })
-                        if (!fs.existsSync(FILES_DIFF + RESULTS))
-                            fs.mkdirSync(FILES_DIFF + RESULTS);
-                        fs.writeFile(fileName, JSON.stringify(container_0), () => {
-                            eventEmitter.emit(EventTypes.fileData, container_0);
-                            // Resolving the promise to signal that the treatment for the current file is done.
-                            resolve('');
-                        });
+                        /**
+                         * Once the top 25 viewed pages have been fetched, I write them both in a JSON formatted file and
+                         * a text file.
+                         * The JSON formatted file will serve immediately for the user while the text file will be written
+                         * once the whole process of all the sub-domains is done.*/
+                        if (country.length > 0) {
+                            let fileName = FILES_DIFF + RESULTS + pageviewsFilename + '/' + country + '.json';
+                            container_1.forEach(c => {
+                                arrayContainer_0 += c + '\n';
+                            })
+                            if (!fs.existsSync(FILES_DIFF + RESULTS))
+                                fs.mkdirSync(FILES_DIFF + RESULTS);
+                            fs.writeFile(fileName, JSON.stringify(container_0), () => {
+                                eventEmitter.emit(EventTypes.fileData, container_0);
+                                // Resolving the promise to signal that the treatment for the current file is done.
+                                resolve('');
+                            });
+                        }
+                    } else {
+                        reject('');
                     }
                 });
             });

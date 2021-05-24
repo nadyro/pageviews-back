@@ -1,4 +1,4 @@
-export const clientUrl = 'http://localhost:4200';
+export const clientUrl = 'http://localhost:3001';
 export const pageViewsUrl = 'https://dumps.wikimedia.org/other/pageviews/';
 export const blacklistUrl = 'https://s3.amazonaws.com/dd-interview-data/data_engineer/wikipedia/blacklist_domains_and_pages';
 export const mongoUri = 'mongodb://localhost/';
