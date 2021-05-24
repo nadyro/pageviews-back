@@ -46,12 +46,11 @@ Redis server running
 
 # Getting started
 <h3> Step 1 : Dependencies </h3>
-Clone the project locally
+Clone the project locally then
 
 <pre> npm install </pre>
 
 <h4>If you're on a unix based system (Linux MacOS)</h4>
-<pre> npm install </pre>
 
 Make sure to have a redis-server binary by typing redis-server -v.
 
